@@ -19,16 +19,17 @@ const { readMatrix, writeResult } = require('./files')
 
 class SimplexMethod {
 
-    constructor(filename, toFile, { colHeader, rowHeader, data }) {
+    constructor({ filename, toFile, outfilename }, { colHeader, rowHeader, data }) {
         this.filename = filename
-        this.toFile = toFile
+        this.toFile = toFile ? toFile : true
+        this.outfilename = outfilename ? outfilename : 'result.txt'
         this.colHeader = colHeader
         this.rowHeader = rowHeader
         this.data = data
         this.iteration = 0
 
-        const outfilename = 'result.txt'
-        this.writer = fs.createWriteStream(outfilename)
+        if (this.toFile)
+            this.writer = fs.createWriteStream(this.outfilename)
 
         // Iterations data
         this.targetRowIndex = 0
@@ -38,9 +39,9 @@ class SimplexMethod {
         this.pivot = 0
     }
 
-    static async build(filename, toFile) {
-        const data = await readMatrix(filename)
-        return new SimplexMethod(filename, toFile, data)
+    static async build(options) {
+        const data = await readMatrix(options.filename)
+        return new SimplexMethod(options, data)
     }
 
     compute() {
@@ -133,7 +134,8 @@ class SimplexMethod {
     print() {
         const padding = 7
 
-        process.stdout.write = this.writer.write.bind(this.writer)
+        if (this.toFile)
+            process.stdout.write = this.writer.write.bind(this.writer)
 
         console.log()
         console.log(`BFS${this.iteration}`) // Note: BFS stands for basic feasible solution
