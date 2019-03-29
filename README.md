@@ -1,7 +1,7 @@
 # The Simplex Method
 ## Prerequisites
 **Node.js CLI**
-You can download it from nodejs [website](https://nodejs.org/en/){:target="_blank"}.
+You can download it from nodejs [website](https://nodejs.org/en/).
 
 ## Setup
 
