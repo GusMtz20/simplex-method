@@ -5,6 +5,7 @@
  * Simplex method implementation
  */
 
+const fs = require('fs')
 const { readMatrix, writeResult } = require('./files')
 
 // readMatrix('matrix.txt')
@@ -18,11 +19,16 @@ const { readMatrix, writeResult } = require('./files')
 
 class SimplexMethod {
 
-    constructor(filename, { colHeader, rowHeader, data }) {
+    constructor(filename, toFile, { colHeader, rowHeader, data }) {
         this.filename = filename
+        this.toFile = toFile
         this.colHeader = colHeader
         this.rowHeader = rowHeader
         this.data = data
+        this.iteration = 0
+
+        const outfilename = 'result.txt'
+        this.writer = fs.createWriteStream(outfilename)
 
         // Iterations data
         this.targetRowIndex = 0
@@ -32,27 +38,18 @@ class SimplexMethod {
         this.pivot = 0
     }
 
-    static async build(filename) {
+    static async build(filename, toFile) {
         const data = await readMatrix(filename)
-        return new SimplexMethod(filename, data)
+        return new SimplexMethod(filename, toFile, data)
     }
 
     compute() {
-        // this.__step1()
-        // // console.log(this.data)
-        // this.__step2()
-        // // console.log(this.newData)
-        // // console.log(this.rectangleMethod(0, 1))
-        // this.__step3()
-        // // console.log(this.needRecalculationColIndexes)
-        // console.log(this.data)
-
         do {
             this.__step1()
             this.__step2()
             this.__step3()
 
-            console.log(this.data)
+            this.print()
         } while (!this.stopCondition())
     }
 
@@ -61,6 +58,8 @@ class SimplexMethod {
     }
 
     __step1() {
+        this.iteration++
+        
         // Detect target column
         const firstRow = this.data[0].slice()
         firstRow.pop()
@@ -127,12 +126,31 @@ class SimplexMethod {
     }
 
     rectangleMethod(rowIndex, colIndex) {
-        // console.log(this.data[rowIndex][colIndex])
-        // console.log(this.pivot)
-        // console.log(this.data[rowIndex][this.targetColIndex])
-        // console.log(this.data[this.targetRowIndex][colIndex])
         return (this.data[rowIndex][colIndex] * this.pivot -
             this.data[rowIndex][this.targetColIndex] * this.data[this.targetRowIndex][colIndex]) / this.pivot
+    }
+
+    print() {
+        const padding = 7
+
+        process.stdout.write = this.writer.write.bind(this.writer)
+
+        console.log()
+        console.log(`BFS${this.iteration}`) // Note: BFS stands for basic feasible solution
+
+        // Print column headers
+        process.stdout.write('▢'.padEnd(padding))
+        for (const header of this.colHeader)
+            process.stdout.write(header.padEnd(padding))
+        console.log()
+
+        // Print data
+        this.data.forEach((row, i) => {
+            process.stdout.write(this.rowHeader[i].padEnd(padding))
+            for (const el of row)
+                process.stdout.write((Math.round(el * 100) / 100).toString().padEnd(padding))
+            console.log()
+        })
     }
 
 }

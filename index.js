@@ -11,7 +11,7 @@ const { readMatrix } = require('./files')
 //         console.log(data)
 //     })
 
-SimplexMethod.build(filename)
+SimplexMethod.build(filename, true)
     .then(simplex => {
         simplex.compute()
     })
