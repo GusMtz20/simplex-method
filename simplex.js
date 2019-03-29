@@ -38,25 +38,31 @@ class SimplexMethod {
     }
 
     compute() {
-        this.__step1()
-        this.__step2()
-        this.__step3()
+        // this.__step1()
+        // // console.log(this.data)
+        // this.__step2()
+        // // console.log(this.newData)
+        // // console.log(this.rectangleMethod(0, 1))
+        // this.__step3()
+        // // console.log(this.needRecalculationColIndexes)
+        // console.log(this.data)
 
-        console.log(this.data)
+        do {
+            this.__step1()
+            this.__step2()
+            this.__step3()
 
-        this.__step1()
-        this.__step2()
-        this.__step3()
+            console.log(this.data)
+        } while (!this.stopCondition())
+    }
 
-        // console.log(this.targetRowIndex)
-        // console.log(this.targetColIndex)
-
-        console.log(this.data)
+    stopCondition() {
+        return this.data[0].every(x => x >= 0)
     }
 
     __step1() {
         // Detect target column
-        const firstRow = this.data[0]
+        const firstRow = this.data[0].slice()
         firstRow.pop()
         let min = { value: 9999, index: 0 }
         let max = { value: -9999, index: 0 }
@@ -121,6 +127,10 @@ class SimplexMethod {
     }
 
     rectangleMethod(rowIndex, colIndex) {
+        // console.log(this.data[rowIndex][colIndex])
+        // console.log(this.pivot)
+        // console.log(this.data[rowIndex][this.targetColIndex])
+        // console.log(this.data[this.targetRowIndex][colIndex])
         return (this.data[rowIndex][colIndex] * this.pivot -
             this.data[rowIndex][this.targetColIndex] * this.data[this.targetRowIndex][colIndex]) / this.pivot
     }

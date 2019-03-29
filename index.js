@@ -2,7 +2,14 @@
 
 const SimplexMethod = require('./simplex')
 
-const filename = 'matrix.txt'
+const filename = 'matrix3.txt'
+
+const { readMatrix } = require('./files')
+
+// readMatrix(filename)
+//     .then(data => {
+//         console.log(data)
+//     })
 
 SimplexMethod.build(filename)
     .then(simplex => {

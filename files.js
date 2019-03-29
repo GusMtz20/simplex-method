@@ -28,7 +28,7 @@ const readMatrix = filename => new Promise((resolve, reject) => {
 
     reader.on('close', () => {
         // The data postprocessing
-        data = data.map(x => x.map(xx => parseInt(xx)))
+        data = data.map(x => x.map(xx => parseFloat(xx)))
 
         resolve({ colHeader, rowHeader, data })
     })
