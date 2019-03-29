@@ -1,11 +1,11 @@
 # The Simplex Method
 ## Prerequisites
 **Node.js CLI**
-You can download it from nodejs [website](https://nodejs.org/en/)
+You can download it from nodejs [website](https://nodejs.org/en/){:target="_blank"}.
 
 ## Setup
 
- 1. Clone this repository via the following command
+ 1. Clone this repository via the following command<br>
 `$ git clone https://github.com/kushkamisha/simplex-method.git`
  
  2. Fill **matrix.txt** file with your data. Open **index.js** and make sure in *options* object you have  *filename* parameter set to a name of this file.
