@@ -1,3 +1,5 @@
 .DS_Store
 *.txt
 !matrix.txt
+
+node_modules/

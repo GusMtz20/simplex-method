@@ -6,22 +6,13 @@
  */
 
 const fs = require('fs')
-const { readMatrix, writeResult } = require('./files')
-
-// readMatrix('matrix.txt')
-//     .then(data => {
-//         console.log(data)
-//         return data
-//     })
-//     .then(data => {
-//         writeResult('result.txt', data)
-//     })
+const { readMatrix } = require('./files')
 
 class SimplexMethod {
 
     constructor({ filename, toFile, outfilename }, { colHeader, rowHeader, data }) {
         this.filename = filename
-        this.toFile = toFile ? toFile : true
+        this.toFile = typeof toFile != 'undefined' ? toFile : true
         this.outfilename = outfilename ? outfilename : 'result.txt'
         this.colHeader = colHeader
         this.rowHeader = rowHeader
@@ -45,13 +36,23 @@ class SimplexMethod {
     }
 
     compute() {
-        do {
-            this.__step1()
-            this.__step2()
-            this.__step3()
+        return new Promise((resolve, reject) => {
+            while (true) {
+                if (this.stopCondition()) {
+                    if (this.toFile) this.writer.close()
+                    break
+                }
 
-            this.print()
-        } while (!this.stopCondition())
+                this.__step1()
+                this.__step2()
+                this.__step3()
+
+                this.print()
+            }
+
+            if (this.toFile)
+                this.writer.on('close', () => { resolve() })
+        })
     }
 
     stopCondition() {
@@ -132,10 +133,12 @@ class SimplexMethod {
     }
 
     print() {
-        const padding = 7
+        if (this.toFile) this.printToFile()
+        else this.printOnScreen()
+    }
 
-        if (this.toFile)
-            process.stdout.write = this.writer.write.bind(this.writer)
+    printOnScreen() {
+        const padding = 7
 
         console.log()
         console.log(`BFS${this.iteration}`) // Note: BFS stands for basic feasible solution
@@ -153,6 +156,31 @@ class SimplexMethod {
                 process.stdout.write((Math.round(el * 100) / 100).toString().padEnd(padding))
             console.log()
         })
+    }
+
+    printToFile() {
+        const padding = 7
+
+        this.writer.write('\n')
+        this.writer.write(`BFS${this.iteration}\n`) // Note: BFS stands for basic feasible solution
+
+        // Print column headers
+        this.writer.write('▢'.padEnd(padding))
+        for (const header of this.colHeader)
+            this.writer.write(header.padEnd(padding))
+        this.writer.write('\n')
+
+        // Print data
+        this.data.forEach((row, i) => {
+            this.writer.write(this.rowHeader[i].padEnd(padding))
+            for (const el of row)
+                this.writer.write((Math.round(el * 100) / 100).toString().padEnd(padding))
+            this.writer.write('\n')
+        })
+        // for (let i = 0; i < 1000000; i++) {
+        //     this.writer.write(`${i} `)
+        //     if (!(i % 100)) this.writer.write('\n')
+        // }
     }
 
 }
