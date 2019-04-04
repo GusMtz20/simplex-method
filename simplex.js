@@ -6,22 +6,13 @@
  */
 
 const fs = require('fs')
-const { readMatrix, writeResult } = require('./files')
-
-// readMatrix('matrix.txt')
-//     .then(data => {
-//         console.log(data)
-//         return data
-//     })
-//     .then(data => {
-//         writeResult('result.txt', data)
-//     })
+const { readMatrix } = require('./files')
 
 class SimplexMethod {
 
     constructor({ filename, toFile, outfilename }, { colHeader, rowHeader, data }) {
         this.filename = filename
-        this.toFile = toFile ? toFile : true
+        this.toFile = toFile !== undefined ? toFile : true
         this.outfilename = outfilename ? outfilename : 'result.txt'
         this.colHeader = colHeader
         this.rowHeader = rowHeader
@@ -45,13 +36,29 @@ class SimplexMethod {
     }
 
     compute() {
-        do {
-            this.__step1()
-            this.__step2()
-            this.__step3()
+        return new Promise((resolve, reject) => {
+            let processStdoutWrite
 
-            this.print()
-        } while (!this.stopCondition())
+            if (this.toFile) {
+                processStdoutWrite = process.stdout.write
+            }
+
+            while (!this.stopCondition()) {
+                this.__step1()
+                this.__step2()
+                this.__step3()
+
+                this.print()
+            }
+
+            if (this.toFile) {
+                process.stdout.write = processStdoutWrite
+                this.writer.end()
+                this.writer.on('close', () => {
+                    resolve()
+                })
+            }
+        })
     }
 
     stopCondition() {
