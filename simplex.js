@@ -84,13 +84,20 @@ class SimplexMethod {
 
         // Detect target row
         const pCol = this.data.map(x => x[x.length-1])
-        let minDividing = { value: 9999, index: 0 } // minimum of P/targetCol
+        let minDividing = { value: 9999, index: -1 } // minimum of P/targetCol
 
         pCol.forEach((p, index) => {
             const current = this.data[index][this.targetColIndex]
             if (p !== 0 && current > 0 && p / current < minDividing.value)
                 minDividing = { value: p / current, index }
         })
+
+        if (minDividing.index === -1) 
+            throw new Error(`
+
+                There are no solutions! But you can still see steps.
+                This is because all elements in the column ${this.targetColIndex + 1} are not greater, than 0
+            `)
         this.targetRowIndex = minDividing.index
     }
 
