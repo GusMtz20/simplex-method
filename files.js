@@ -1,9 +1,7 @@
-'use strict'
-
 const fs = require('fs')
 const { createInterface } = require('readline')
 
-const readMatrix = filename => new Promise((resolve, reject) => {
+const readMatrix = filename => new Promise(resolve => {
     let firstLine = true
     let colHeader = []
     const rowHeader = []

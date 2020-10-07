@@ -1,5 +1,3 @@
-'use strict'
-
 /**
  * @module
  * Simplex method implementation
@@ -10,7 +8,8 @@ const { readMatrix } = require('./files')
 
 class SimplexMethod {
 
-    constructor({ filename, toFile, outfilename }, { colHeader, rowHeader, data }) {
+    constructor({ filename, toFile, outfilename },
+        { colHeader, rowHeader, data }) {
         this.filename = filename
         this.toFile = toFile !== undefined ? toFile : true
         this.outfilename = outfilename ? outfilename : 'result.txt'
@@ -36,14 +35,14 @@ class SimplexMethod {
     }
 
     compute() {
-        return new Promise((resolve, reject) => {
-            let processStdoutWrite
+        return new Promise(resolve => {
+            let defaultOutStream
 
             if (this.toFile) {
-                processStdoutWrite = process.stdout.write
+                defaultOutStream = process.stdout.write
             }
 
-            while (!this.stopCondition()) {
+            while (!this.__stopCondition()) {
                 this.__step1()
                 this.__step2()
                 this.__step3()
@@ -52,28 +51,28 @@ class SimplexMethod {
             }
 
             if (this.toFile) {
-                process.stdout.write = processStdoutWrite
+                process.stdout.write = defaultOutStream
                 this.writer.end()
-                this.writer.on('close', () => {
-                    resolve()
-                })
+                this.writer.on('close', resolve)
             }
+
+            console.log(this.data)
         })
     }
 
-    stopCondition() {
+    __stopCondition() {
         return this.data[0].every(x => x >= 0)
     }
 
     __step1() {
         this.iteration++
-        
+
         // Detect target column
         const firstRow = this.data[0].slice()
         firstRow.pop()
-        let min = { value: 9999, index: 0 }
-        let max = { value: -9999, index: 0 }
-        
+        let min = { value: Infinity, index: 0 }
+        let max = { value: -Infinity, index: 0 }
+
         firstRow.forEach((elem, index) => {
             if (elem > max.value) max = { value: elem, index }
             if (elem < min.value) min = { value: elem, index }
@@ -83,8 +82,9 @@ class SimplexMethod {
         else this.targetColIndex = max.index
 
         // Detect target row
-        const pCol = this.data.map(x => x[x.length-1])
-        let minDividing = { value: 9999, index: -1 } // minimum of P/targetCol
+        const pCol = this.data.map(x => x[x.length - 1])
+        // minimum of P/targetCol
+        let minDividing = { value: Infinity, index: -1 }
 
         pCol.forEach((p, index) => {
             const current = this.data[index][this.targetColIndex]
@@ -92,28 +92,34 @@ class SimplexMethod {
                 minDividing = { value: p / current, index }
         })
 
-        if (minDividing.index === -1) 
+        if (minDividing.index === -1)
             throw new Error(`
 
                 There are no solutions! But you can still see steps.
-                This is because all elements in the column ${this.targetColIndex + 1} are not greater, than 0
+                This is because all elements in the column \
+${this.targetColIndex + 1} are not greater, than 0
             `)
         this.targetRowIndex = minDividing.index
     }
 
     __step2() {
         // Add to basis variables
-        this.rowHeader[this.targetRowIndex] = this.colHeader[this.targetColIndex]
+        this.rowHeader[this.targetRowIndex] = this.colHeader[
+            this.targetColIndex
+        ]
 
         this.pivot = this.data[this.targetRowIndex][this.targetColIndex]
 
         // Divide target row by pivot
-        this.newData = new Array(this.data.length).fill(0).map(x => new Array(this.data[0].length).fill(0))
-        this.newData[this.targetRowIndex] = this.data[this.targetRowIndex].map(x => x / this.pivot)
+        this.newData = new Array(this.data.length).fill(0)
+            .map(() => new Array(this.data[0].length).fill(0))
+        this.newData[this.targetRowIndex] = this.data[this.targetRowIndex]
+            .map(x => x / this.pivot)
 
         // Consider which columns don't need recalculation
         const doNotNeedRecalculationColIndexes = []
-        this.needRecalculationColIndexes = new Array(this.data[0].length).fill().map((x, i) => i)
+        this.needRecalculationColIndexes = new Array(this.data[0].length)
+            .fill().map((x, i) => i)
 
         this.rowHeader.forEach((header, rowIndex) => {
             if (rowIndex !== 0) {
@@ -126,23 +132,25 @@ class SimplexMethod {
         })
 
         for (const elem of doNotNeedRecalculationColIndexes)
-            this.needRecalculationColIndexes = this.needRecalculationColIndexes.filter(x => x !== elem)
+            this.needRecalculationColIndexes = this.needRecalculationColIndexes
+                .filter(x => x !== elem)
     }
 
     __step3() {
         for (const j of this.needRecalculationColIndexes) {
             for (let i = 0; i < this.data.length; i++) {
                 if (i === this.targetRowIndex) continue
-                this.newData[i][j] = this.rectangleMethod(i, j)
+                this.newData[i][j] = this.__rectangleMethod(i, j)
             }
         }
 
         this.data = this.newData
     }
 
-    rectangleMethod(rowIndex, colIndex) {
+    __rectangleMethod(rowIndex, colIndex) {
         return (this.data[rowIndex][colIndex] * this.pivot -
-            this.data[rowIndex][this.targetColIndex] * this.data[this.targetRowIndex][colIndex]) / this.pivot
+            this.data[rowIndex][this.targetColIndex] *
+            this.data[this.targetRowIndex][colIndex]) / this.pivot
     }
 
     print() {
@@ -151,8 +159,8 @@ class SimplexMethod {
         if (this.toFile)
             process.stdout.write = this.writer.write.bind(this.writer)
 
-        console.log()
-        console.log(`BFS${this.iteration}`) // Note: BFS stands for basic feasible solution
+        // Note: BFS stands for the Basic Feasible Solution
+        console.log(`\nBFS${this.iteration}`)
 
         // Print column headers
         process.stdout.write('▢'.padEnd(padding))
@@ -160,11 +168,12 @@ class SimplexMethod {
             process.stdout.write(header.padEnd(padding))
         console.log()
 
-        // Print data
+        // Print the data
         this.data.forEach((row, i) => {
             process.stdout.write(this.rowHeader[i].padEnd(padding))
             for (const el of row)
-                process.stdout.write((Math.round(el * 100) / 100).toString().padEnd(padding))
+                process.stdout.write((Math.round(el * 100) / 100).toString()
+                    .padEnd(padding))
             console.log()
         })
     }

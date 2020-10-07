@@ -1,11 +1,13 @@
-'use strict'
-
 const SimplexMethod = require('./simplex')
 
 const options = {
-    filename: 'm4.txt', // name of the file with matrix to be solved
-    toFile: true, // [optional] print result & steps to a file, not to the console
-    // outfilename: 'result.txt' // [optional] where to save result. Need only if toFile option is true
+    // the name of a file with a matrix to be solved
+    filename: 'inputs/matrix2.txt',
+    // [optional] prints the result & steps to a file, not to the console
+    toFile: true,
+    // [optional] where to save the result; is needed only if the toFile option
+    // is true
+    // outfilename: 'result.txt'
 }
 
 SimplexMethod.build(options)
